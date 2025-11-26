@@ -4,246 +4,87 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pong</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'game-dark': '#1a1a2e',
+                        'game-darker': '#0f0f23',
+                        'game-blue': '#16213e',
+                        'game-blue-light': '#1f4068',
+                        'game-gray': '#4a4a6a',
+                        'game-gray-light': '#7a7aaa',
+                        'game-text-dim': '#6a6a8a',
+                        'game-line': '#2a2a4a'
+                    },
+                    fontFamily: {
+                        'mono': ['Courier New', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: #1a1a2e;
-            font-family: 'Courier New', monospace;
-        }
-
-        .game-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-        }
-
-        #scoreboard {
-            display: flex;
-            gap: 60px;
-            font-size: 48px;
-            color: #fff;
-            text-shadow: 0 0 10px rgba(255,255,255,0.5);
-        }
-
-        .score {
-            min-width: 60px;
-            text-align: center;
-        }
-
-        #gameCanvas {
-            border: 4px solid #4a4a6a;
-            border-radius: 8px;
-            cursor: none;
-        }
-
-        #startBtn {
-            padding: 15px 40px;
-            font-size: 20px;
-            font-family: 'Courier New', monospace;
-            background: #16213e;
-            color: #fff;
-            border: 2px solid #4a4a6a;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        #startBtn:hover {
-            background: #1f4068;
-            border-color: #7a7aaa;
-            transform: scale(1.05);
-        }
-
-        #startBtn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .instructions {
-            color: #6a6a8a;
-            font-size: 14px;
-            text-align: center;
-        }
-
-        .menu-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            padding: 40px;
-            background: rgba(22, 33, 62, 0.5);
-            border: 2px solid #4a4a6a;
-            border-radius: 12px;
-        }
-
-        .menu-screen h2 {
-            color: #fff;
-            font-size: 32px;
-            margin-bottom: 10px;
-        }
-
-        .mode-buttons {
-            display: flex;
-            gap: 20px;
-        }
-
-        .mode-btn {
-            padding: 20px 40px;
-            font-size: 18px;
-            font-family: 'Courier New', monospace;
-            background: #16213e;
-            color: #fff;
-            border: 2px solid #4a4a6a;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .mode-btn:hover {
-            background: #1f4068;
-            border-color: #7a7aaa;
-            transform: scale(1.05);
-        }
-
-        .multiplayer-setup {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            width: 100%;
-            max-width: 400px;
-        }
-
-        .room-code-display {
-            padding: 20px;
-            background: #0f0f23;
-            border: 2px solid #4a4a6a;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        .room-code-display .label {
-            color: #6a6a8a;
-            font-size: 12px;
-            margin-bottom: 8px;
-        }
-
-        .room-code-display .code {
-            color: #fff;
-            font-size: 24px;
-            font-weight: bold;
-            letter-spacing: 3px;
-        }
-
-        input[type="text"] {
-            padding: 15px;
-            font-size: 18px;
-            font-family: 'Courier New', monospace;
-            background: #0f0f23;
-            color: #fff;
-            border: 2px solid #4a4a6a;
-            border-radius: 8px;
-            text-align: center;
-            letter-spacing: 2px;
-        }
-
-        input[type="text"]::placeholder {
-            color: #6a6a8a;
-        }
-
-        .status-message {
-            color: #7a7aaa;
-            font-size: 14px;
-            text-align: center;
-            min-height: 20px;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .back-btn {
-            padding: 10px 20px;
-            font-size: 14px;
-            font-family: 'Courier New', monospace;
-            background: transparent;
-            color: #6a6a8a;
-            border: 1px solid #4a4a6a;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .back-btn:hover {
-            color: #fff;
-            border-color: #7a7aaa;
-        }
+        /* Utility per il cursore none sul canvas */
+        .cursor-none { cursor: none; }
     </style>
 </head>
-<body>
-    <div class="game-container">
+<body class="flex justify-center items-center min-h-screen bg-game-dark font-mono">
+    <div class="flex flex-col items-center gap-5">
         <!-- Menu principale: selezione modalità -->
-        <div id="modeMenu" class="menu-screen">
-            <h2>PONG</h2>
-            <p class="instructions">Scegli la modalità di gioco</p>
-            <div class="mode-buttons">
-                <button class="mode-btn" id="vsAIBtn">VS COMPUTER</button>
-                <button class="mode-btn" id="vsPlayerBtn">VS GIOCATORE</button>
+        <div id="modeMenu" class="flex flex-col items-center gap-5 p-10 bg-game-blue/50 border-2 border-game-gray rounded-xl">
+            <h2 class="text-white text-[32px] mb-2.5">PONG</h2>
+            <p class="text-game-text-dim text-sm text-center">Scegli la modalità di gioco</p>
+            <div class="flex gap-5">
+                <button class="px-10 py-5 text-lg font-mono bg-game-blue text-white border-2 border-game-gray rounded-lg cursor-pointer transition-all duration-300 hover:bg-game-blue-light hover:border-game-gray-light hover:scale-105" id="vsAIBtn">VS COMPUTER</button>
+                <button class="px-10 py-5 text-lg font-mono bg-game-blue text-white border-2 border-game-gray rounded-lg cursor-pointer transition-all duration-300 hover:bg-game-blue-light hover:border-game-gray-light hover:scale-105" id="vsPlayerBtn">VS GIOCATORE</button>
             </div>
         </div>
 
         <!-- Menu multiplayer: crea/unisciti a partita -->
-        <div id="multiplayerMenu" class="menu-screen hidden">
-            <h2>MULTIPLAYER</h2>
-            <div class="mode-buttons">
-                <button class="mode-btn" id="hostBtn">CREA PARTITA</button>
-                <button class="mode-btn" id="joinBtn">UNISCITI</button>
+        <div id="multiplayerMenu" class="hidden flex-col items-center gap-5 p-10 bg-game-blue/50 border-2 border-game-gray rounded-xl">
+            <h2 class="text-white text-[32px] mb-2.5">MULTIPLAYER</h2>
+            <div class="flex gap-5">
+                <button class="px-10 py-5 text-lg font-mono bg-game-blue text-white border-2 border-game-gray rounded-lg cursor-pointer transition-all duration-300 hover:bg-game-blue-light hover:border-game-gray-light hover:scale-105" id="hostBtn">CREA PARTITA</button>
+                <button class="px-10 py-5 text-lg font-mono bg-game-blue text-white border-2 border-game-gray rounded-lg cursor-pointer transition-all duration-300 hover:bg-game-blue-light hover:border-game-gray-light hover:scale-105" id="joinBtn">UNISCITI</button>
             </div>
-            <button class="back-btn" id="backFromMulti">Indietro</button>
+            <button class="px-5 py-2.5 text-sm font-mono bg-transparent text-game-text-dim border border-game-gray rounded-lg cursor-pointer transition-all duration-300 hover:text-white hover:border-game-gray-light" id="backFromMulti">Indietro</button>
         </div>
 
         <!-- Schermata host: mostra codice -->
-        <div id="hostScreen" class="menu-screen hidden">
-            <h2>CREA PARTITA</h2>
-            <div class="room-code-display">
-                <div class="label">Condividi questo codice:</div>
-                <div class="code" id="roomCode">-----</div>
+        <div id="hostScreen" class="hidden flex-col items-center gap-5 p-10 bg-game-blue/50 border-2 border-game-gray rounded-xl">
+            <h2 class="text-white text-[32px] mb-2.5">CREA PARTITA</h2>
+            <div class="p-5 bg-game-darker border-2 border-game-gray rounded-lg text-center">
+                <div class="text-game-text-dim text-xs mb-2">Condividi questo codice:</div>
+                <div class="text-white text-2xl font-bold tracking-[3px]" id="roomCode">-----</div>
             </div>
-            <p class="status-message" id="hostStatus">In attesa dell'altro giocatore...</p>
-            <button class="back-btn" id="backFromHost">Annulla</button>
+            <p class="text-game-gray-light text-sm text-center min-h-[20px]" id="hostStatus">In attesa dell'altro giocatore...</p>
+            <button class="px-5 py-2.5 text-sm font-mono bg-transparent text-game-text-dim border border-game-gray rounded-lg cursor-pointer transition-all duration-300 hover:text-white hover:border-game-gray-light" id="backFromHost">Annulla</button>
         </div>
 
         <!-- Schermata join: inserisci codice -->
-        <div id="joinScreen" class="menu-screen hidden">
-            <h2>UNISCITI</h2>
-            <div class="multiplayer-setup">
-                <input type="text" id="codeInput" placeholder="INSERISCI CODICE" maxlength="9">
-                <button class="mode-btn" id="connectBtn">CONNETTI</button>
+        <div id="joinScreen" class="hidden flex-col items-center gap-5 p-10 bg-game-blue/50 border-2 border-game-gray rounded-xl">
+            <h2 class="text-white text-[32px] mb-2.5">UNISCITI</h2>
+            <div class="flex flex-col gap-[15px] w-full max-w-[400px]">
+                <input type="text" id="codeInput" placeholder="INSERISCI CODICE" maxlength="9" class="p-[15px] text-lg font-mono bg-game-darker text-white border-2 border-game-gray rounded-lg text-center tracking-[2px] placeholder:text-game-text-dim">
+                <button class="px-10 py-5 text-lg font-mono bg-game-blue text-white border-2 border-game-gray rounded-lg cursor-pointer transition-all duration-300 hover:bg-game-blue-light hover:border-game-gray-light hover:scale-105" id="connectBtn">CONNETTI</button>
             </div>
-            <p class="status-message" id="joinStatus"></p>
-            <button class="back-btn" id="backFromJoin">Indietro</button>
+            <p class="text-game-gray-light text-sm text-center min-h-[20px]" id="joinStatus"></p>
+            <button class="px-5 py-2.5 text-sm font-mono bg-transparent text-game-text-dim border border-game-gray rounded-lg cursor-pointer transition-all duration-300 hover:text-white hover:border-game-gray-light" id="backFromJoin">Indietro</button>
         </div>
 
         <!-- Schermata di gioco -->
-        <div id="gameScreen" class="hidden">
-            <div id="scoreboard">
-                <span class="score" id="scoreLeft">0</span>
+        <div id="gameScreen" class="hidden flex-col items-center gap-5">
+            <div class="flex gap-[60px] text-5xl text-white" style="text-shadow: 0 0 10px rgba(255,255,255,0.5);">
+                <span class="min-w-[60px] text-center" id="scoreLeft">0</span>
                 <span>-</span>
-                <span class="score" id="scoreRight">0</span>
+                <span class="min-w-[60px] text-center" id="scoreRight">0</span>
             </div>
-            <canvas id="gameCanvas" width="800" height="500"></canvas>
-            <button id="startBtn">INIZIA</button>
-            <p class="instructions" id="gameInstructions">Muovi il mouse su e giù per controllare la racchetta destra</p>
+            <canvas id="gameCanvas" width="800" height="500" class="border-4 border-game-gray rounded-lg cursor-none"></canvas>
+            <button id="startBtn" class="px-10 py-[15px] text-xl font-mono bg-game-blue text-white border-2 border-game-gray rounded-lg cursor-pointer transition-all duration-300 hover:bg-game-blue-light hover:border-game-gray-light hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">INIZIA</button>
+            <p class="text-game-text-dim text-sm text-center" id="gameInstructions">Muovi il mouse su e giù per controllare la racchetta destra</p>
         </div>
     </div>
 
