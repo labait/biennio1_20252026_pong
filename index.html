@@ -90,6 +90,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.9/dat.gui.min.js"></script>
     <script>
         // ========== RIFERIMENTI DOM ==========
         const canvas = document.getElementById('gameCanvas');
@@ -409,8 +410,12 @@
         const PADDLE_HEIGHT = 100;
         const BALL_SIZE = 14;
         const PADDLE_SPEED = 5;
-        const INITIAL_BALL_SPEED = 6;
         const POINTS_TO_WIN = 3; // Punti necessari per vincere
+
+        // Configurazione debug (modificabile tramite GUI)
+        const debugConfig = {
+            initialBallSpeed: 6
+        };
 
         // Stato del gioco
         let gameRunning = false;
@@ -439,9 +444,9 @@
             x: canvas.width / 2,
             y: canvas.height / 2,
             size: BALL_SIZE,
-            speedX: INITIAL_BALL_SPEED,
-            speedY: INITIAL_BALL_SPEED * 0.5,
-            baseSpeed: INITIAL_BALL_SPEED
+            speedX: debugConfig.initialBallSpeed,
+            speedY: debugConfig.initialBallSpeed * 0.5,
+            baseSpeed: debugConfig.initialBallSpeed
         };
 
         // Target Y per l'AI (con un po' di ritardo nella reazione)
@@ -491,7 +496,10 @@
         function resetBall() {
             ball.x = canvas.width / 2;
             ball.y = canvas.height / 2;
-            
+
+            // Aggiorna baseSpeed con il valore attuale dal debug config
+            ball.baseSpeed = debugConfig.initialBallSpeed;
+
             // Direzione casuale
             ball.speedX = (Math.random() > 0.5 ? 1 : -1) * ball.baseSpeed;
             ball.speedY = (Math.random() - 0.5) * ball.baseSpeed;
@@ -653,6 +661,13 @@
 
         // Disegna lo stato iniziale
         draw();
+
+        // ========== PANNELLO DEBUG (dat.GUI) ==========
+        const gui = new dat.GUI();
+        gui.add(debugConfig, 'initialBallSpeed', 1, 15).name('Initial Ball Speed').onChange((value) => {
+            // Aggiorna immediatamente baseSpeed per effetto real-time
+            ball.baseSpeed = value;
+        });
     </script>
 </body>
 </html>
