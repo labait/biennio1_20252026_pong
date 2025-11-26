@@ -88,9 +88,21 @@
         </div>
     </div>
 
+    <!-- Footer con versione -->
+    <footer class="fixed bottom-0 left-0 right-0 p-2 text-center text-game-text-dim text-xs">
+        <span>Version: <span id="commitId">dev</span></span>
+    </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.9/dat.gui.min.js"></script>
+    <script>
+        // Commit ID - Aggiornato automaticamente dal pre-push hook
+        const COMMIT_ID = '9955e49';
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('commitId').textContent = COMMIT_ID;
+        });
+    </script>
     <script>
         // ========== RIFERIMENTI DOM ==========
         const canvas = document.getElementById('gameCanvas');
