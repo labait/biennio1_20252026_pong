@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(ffmpeg:*)"
+      "Bash(ffmpeg:*)",
+      "Bash(open:*)"
     ],
     "deny": [],
     "ask": []
