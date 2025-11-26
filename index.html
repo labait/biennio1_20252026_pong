@@ -75,33 +75,400 @@
             font-size: 14px;
             text-align: center;
         }
+
+        .menu-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 40px;
+            background: rgba(22, 33, 62, 0.5);
+            border: 2px solid #4a4a6a;
+            border-radius: 12px;
+        }
+
+        .menu-screen h2 {
+            color: #fff;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .mode-buttons {
+            display: flex;
+            gap: 20px;
+        }
+
+        .mode-btn {
+            padding: 20px 40px;
+            font-size: 18px;
+            font-family: 'Courier New', monospace;
+            background: #16213e;
+            color: #fff;
+            border: 2px solid #4a4a6a;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mode-btn:hover {
+            background: #1f4068;
+            border-color: #7a7aaa;
+            transform: scale(1.05);
+        }
+
+        .multiplayer-setup {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .room-code-display {
+            padding: 20px;
+            background: #0f0f23;
+            border: 2px solid #4a4a6a;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .room-code-display .label {
+            color: #6a6a8a;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .room-code-display .code {
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 3px;
+        }
+
+        input[type="text"] {
+            padding: 15px;
+            font-size: 18px;
+            font-family: 'Courier New', monospace;
+            background: #0f0f23;
+            color: #fff;
+            border: 2px solid #4a4a6a;
+            border-radius: 8px;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        input[type="text"]::placeholder {
+            color: #6a6a8a;
+        }
+
+        .status-message {
+            color: #7a7aaa;
+            font-size: 14px;
+            text-align: center;
+            min-height: 20px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .back-btn {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            background: transparent;
+            color: #6a6a8a;
+            border: 1px solid #4a4a6a;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            color: #fff;
+            border-color: #7a7aaa;
+        }
     </style>
 </head>
 <body>
     <div class="game-container">
-        <div id="scoreboard">
-            <span class="score" id="scoreLeft">0</span>
-            <span>-</span>
-            <span class="score" id="scoreRight">0</span>
+        <!-- Menu principale: selezione modalità -->
+        <div id="modeMenu" class="menu-screen">
+            <h2>PONG</h2>
+            <p class="instructions">Scegli la modalità di gioco</p>
+            <div class="mode-buttons">
+                <button class="mode-btn" id="vsAIBtn">VS COMPUTER</button>
+                <button class="mode-btn" id="vsPlayerBtn">VS GIOCATORE</button>
+            </div>
         </div>
-        <canvas id="gameCanvas" width="800" height="500"></canvas>
-        <button id="startBtn">INIZIA</button>
-        <p class="instructions">Muovi il mouse su e giù per controllare la racchetta destra</p>
+
+        <!-- Menu multiplayer: crea/unisciti a partita -->
+        <div id="multiplayerMenu" class="menu-screen hidden">
+            <h2>MULTIPLAYER</h2>
+            <div class="mode-buttons">
+                <button class="mode-btn" id="hostBtn">CREA PARTITA</button>
+                <button class="mode-btn" id="joinBtn">UNISCITI</button>
+            </div>
+            <button class="back-btn" id="backFromMulti">Indietro</button>
+        </div>
+
+        <!-- Schermata host: mostra codice -->
+        <div id="hostScreen" class="menu-screen hidden">
+            <h2>CREA PARTITA</h2>
+            <div class="room-code-display">
+                <div class="label">Condividi questo codice:</div>
+                <div class="code" id="roomCode">-----</div>
+            </div>
+            <p class="status-message" id="hostStatus">In attesa dell'altro giocatore...</p>
+            <button class="back-btn" id="backFromHost">Annulla</button>
+        </div>
+
+        <!-- Schermata join: inserisci codice -->
+        <div id="joinScreen" class="menu-screen hidden">
+            <h2>UNISCITI</h2>
+            <div class="multiplayer-setup">
+                <input type="text" id="codeInput" placeholder="INSERISCI CODICE" maxlength="9">
+                <button class="mode-btn" id="connectBtn">CONNETTI</button>
+            </div>
+            <p class="status-message" id="joinStatus"></p>
+            <button class="back-btn" id="backFromJoin">Indietro</button>
+        </div>
+
+        <!-- Schermata di gioco -->
+        <div id="gameScreen" class="hidden">
+            <div id="scoreboard">
+                <span class="score" id="scoreLeft">0</span>
+                <span>-</span>
+                <span class="score" id="scoreRight">0</span>
+            </div>
+            <canvas id="gameCanvas" width="800" height="500"></canvas>
+            <button id="startBtn">INIZIA</button>
+            <p class="instructions" id="gameInstructions">Muovi il mouse su e giù per controllare la racchetta destra</p>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script>
+        // ========== RIFERIMENTI DOM ==========
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const startBtn = document.getElementById('startBtn');
         const scoreLeftEl = document.getElementById('scoreLeft');
         const scoreRightEl = document.getElementById('scoreRight');
 
+        // Menu screens
+        const modeMenu = document.getElementById('modeMenu');
+        const multiplayerMenu = document.getElementById('multiplayerMenu');
+        const hostScreen = document.getElementById('hostScreen');
+        const joinScreen = document.getElementById('joinScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const gameInstructions = document.getElementById('gameInstructions');
+
+        // Buttons
+        const vsAIBtn = document.getElementById('vsAIBtn');
+        const vsPlayerBtn = document.getElementById('vsPlayerBtn');
+        const hostBtn = document.getElementById('hostBtn');
+        const joinBtn = document.getElementById('joinBtn');
+        const connectBtn = document.getElementById('connectBtn');
+        const backFromMulti = document.getElementById('backFromMulti');
+        const backFromHost = document.getElementById('backFromHost');
+        const backFromJoin = document.getElementById('backFromJoin');
+
+        // Multiplayer elements
+        const roomCodeEl = document.getElementById('roomCode');
+        const codeInput = document.getElementById('codeInput');
+        const hostStatus = document.getElementById('hostStatus');
+        const joinStatus = document.getElementById('joinStatus');
+
         // Carica i suoni dalla cartella sound
         const whistleSound = new Audio('sound/whistle.mp3');
         const pongSound = new Audio('sound/pong.mp3');
         const trumpetSound = new Audio('sound/trumpet.mp3');
 
+        // ========== STATO DEL GIOCO ==========
+        let gameMode = null; // 'ai' o 'multiplayer'
+        let isHost = false;
+        let peer = null;
+        let connection = null;
+        let myPaddleSide = null; // 'left' o 'right'
+
+        // ========== FUNZIONI UI/NAVIGAZIONE ==========
+        function showScreen(screen) {
+            [modeMenu, multiplayerMenu, hostScreen, joinScreen, gameScreen].forEach(s => {
+                s.classList.add('hidden');
+            });
+            screen.classList.remove('hidden');
+        }
+
+        function generateRoomCode() {
+            return Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+
+        // ========== GESTIONE MENU ==========
+        vsAIBtn.addEventListener('click', () => {
+            gameMode = 'ai';
+            myPaddleSide = 'right';
+            gameInstructions.textContent = 'Muovi il mouse su e giù per controllare la racchetta destra';
+            showScreen(gameScreen);
+            draw();
+        });
+
+        vsPlayerBtn.addEventListener('click', () => {
+            showScreen(multiplayerMenu);
+        });
+
+        backFromMulti.addEventListener('click', () => {
+            showScreen(modeMenu);
+        });
+
+        hostBtn.addEventListener('click', () => {
+            setupHost();
+        });
+
+        joinBtn.addEventListener('click', () => {
+            showScreen(joinScreen);
+        });
+
+        backFromHost.addEventListener('click', () => {
+            if (peer) peer.destroy();
+            showScreen(multiplayerMenu);
+        });
+
+        backFromJoin.addEventListener('click', () => {
+            showScreen(multiplayerMenu);
+        });
+
+        connectBtn.addEventListener('click', () => {
+            const code = codeInput.value.trim().toUpperCase();
+            if (code.length >= 4) {
+                joinGame(code);
+            } else {
+                joinStatus.textContent = 'Inserisci un codice valido';
+            }
+        });
+
+        // ========== P2P CONNECTION ==========
+        function setupHost() {
+            gameMode = 'multiplayer';
+            isHost = true;
+            myPaddleSide = 'left';
+
+            const roomCode = generateRoomCode();
+            peer = new Peer('pong-' + roomCode);
+
+            peer.on('open', (id) => {
+                roomCodeEl.textContent = roomCode;
+                hostStatus.textContent = 'In attesa dell\'altro giocatore...';
+                showScreen(hostScreen);
+            });
+
+            peer.on('connection', (conn) => {
+                connection = conn;
+                setupConnection();
+                hostStatus.textContent = 'Giocatore connesso! Inizia quando sei pronto.';
+
+                setTimeout(() => {
+                    gameInstructions.textContent = 'Muovi il mouse su e giù per controllare la racchetta SINISTRA';
+                    showScreen(gameScreen);
+                    draw();
+                }, 1000);
+            });
+
+            peer.on('error', (err) => {
+                console.error('Peer error:', err);
+                hostStatus.textContent = 'Errore di connessione. Riprova.';
+            });
+        }
+
+        function joinGame(roomCode) {
+            gameMode = 'multiplayer';
+            isHost = false;
+            myPaddleSide = 'right';
+
+            joinStatus.textContent = 'Connessione in corso...';
+
+            peer = new Peer();
+
+            peer.on('open', () => {
+                connection = peer.connect('pong-' + roomCode);
+
+                connection.on('open', () => {
+                    setupConnection();
+                    joinStatus.textContent = 'Connesso! Inizia quando sei pronto.';
+
+                    setTimeout(() => {
+                        gameInstructions.textContent = 'Muovi il mouse su e giù per controllare la racchetta DESTRA';
+                        showScreen(gameScreen);
+                        draw();
+                    }, 1000);
+                });
+
+                connection.on('error', (err) => {
+                    console.error('Connection error:', err);
+                    joinStatus.textContent = 'Impossibile connettersi. Verifica il codice.';
+                });
+            });
+        }
+
+        function setupConnection() {
+            connection.on('data', (data) => {
+                handlePeerData(data);
+            });
+
+            connection.on('close', () => {
+                alert('L\'altro giocatore si è disconnesso.');
+                location.reload();
+            });
+        }
+
+        function sendToPeer(data) {
+            if (connection && connection.open) {
+                connection.send(data);
+            }
+        }
+
+        function handlePeerData(data) {
+            switch(data.type) {
+                case 'paddle':
+                    // Aggiorna la posizione della racchetta dell'avversario
+                    if (myPaddleSide === 'left') {
+                        paddleRight.y = data.y;
+                    } else {
+                        paddleLeft.y = data.y;
+                    }
+                    break;
+                case 'start':
+                    // L'altro giocatore ha iniziato
+                    if (!gameRunning) {
+                        gameRunning = true;
+                        startBtn.disabled = true;
+                        startBtn.textContent = 'IN GIOCO...';
+                        playWhistle();
+                        resetBall();
+                        gameLoop();
+                    }
+                    break;
+                case 'ball':
+                    // Sincronizza la palla (solo l'host invia questo)
+                    if (!isHost) {
+                        ball.x = data.x;
+                        ball.y = data.y;
+                        ball.speedX = data.speedX;
+                        ball.speedY = data.speedY;
+                    }
+                    break;
+                case 'score':
+                    // Sincronizza il punteggio
+                    scoreLeft = data.left;
+                    scoreRight = data.right;
+                    scoreLeftEl.textContent = scoreLeft;
+                    scoreRightEl.textContent = scoreRight;
+                    break;
+            }
+        }
+
+        // ========== FUNZIONI AUDIO ==========
         // Funzione per suonare il fischietto (inizio gioco)
         function playWhistle() {
             whistleSound.currentTime = 0;
@@ -156,10 +523,14 @@
         // Funzione per controllare se c'è un vincitore
         function checkWinner() {
             if (scoreLeft >= POINTS_TO_WIN) {
-                endGame('AI');
+                let winnerName = gameMode === 'ai' ? 'AI' :
+                                 (myPaddleSide === 'left' ? 'TU' : 'AVVERSARIO');
+                endGame(winnerName);
                 return true;
             } else if (scoreRight >= POINTS_TO_WIN) {
-                endGame('GIOCATORE');
+                let winnerName = gameMode === 'ai' ? 'GIOCATORE' :
+                                 (myPaddleSide === 'right' ? 'TU' : 'AVVERSARIO');
+                endGame(winnerName);
                 return true;
             }
             return false;
@@ -239,14 +610,22 @@
         canvas.addEventListener('mousemove', (e) => {
             const rect = canvas.getBoundingClientRect();
             const mouseY = e.clientY - rect.top;
-            
+
+            // Determina quale racchetta controllare
+            let paddle = myPaddleSide === 'right' ? paddleRight : paddleLeft;
+
             // Centra la racchetta sul mouse
-            paddleRight.y = mouseY - PADDLE_HEIGHT / 2;
-            
+            paddle.y = mouseY - PADDLE_HEIGHT / 2;
+
             // Limita ai bordi
-            if (paddleRight.y < 0) paddleRight.y = 0;
-            if (paddleRight.y + PADDLE_HEIGHT > canvas.height) {
-                paddleRight.y = canvas.height - PADDLE_HEIGHT;
+            if (paddle.y < 0) paddle.y = 0;
+            if (paddle.y + PADDLE_HEIGHT > canvas.height) {
+                paddle.y = canvas.height - PADDLE_HEIGHT;
+            }
+
+            // Invia la posizione al peer in modalità multiplayer
+            if (gameMode === 'multiplayer') {
+                sendToPeer({ type: 'paddle', y: paddle.y });
             }
         });
 
@@ -258,6 +637,12 @@
                 startBtn.textContent = 'IN GIOCO...';
                 playWhistle(); // Fischietto di inizio
                 resetBall();
+
+                // Notifica l'altro giocatore in modalità multiplayer
+                if (gameMode === 'multiplayer') {
+                    sendToPeer({ type: 'start' });
+                }
+
                 gameLoop();
             }
         });
@@ -272,6 +657,9 @@
         }
 
         function updateAI() {
+            // L'AI è attiva solo in modalità vs computer
+            if (gameMode !== 'ai') return;
+
             // L'AI insegue la palla con un po' di ritardo
             if (ball.speedX < 0) { // La palla viene verso l'AI
                 aiTargetY = ball.y;
@@ -296,6 +684,11 @@
         }
 
         function updateBall() {
+            // In multiplayer, solo l'host calcola la fisica della palla
+            if (gameMode === 'multiplayer' && !isHost) {
+                return; // Il client riceve gli aggiornamenti dal peer
+            }
+
             ball.x += ball.speedX;
             ball.y += ball.speedY;
 
@@ -342,6 +735,12 @@
                 playTrumpet(); // Suono della tromba per punto fatto
                 scoreRight++;
                 scoreRightEl.textContent = scoreRight;
+
+                // Sincronizza il punteggio in multiplayer
+                if (gameMode === 'multiplayer') {
+                    sendToPeer({ type: 'score', left: scoreLeft, right: scoreRight });
+                }
+
                 if (!checkWinner()) {
                     resetBall();
                 }
@@ -349,9 +748,26 @@
                 playTrumpet(); // Suono della tromba per punto fatto
                 scoreLeft++;
                 scoreLeftEl.textContent = scoreLeft;
+
+                // Sincronizza il punteggio in multiplayer
+                if (gameMode === 'multiplayer') {
+                    sendToPeer({ type: 'score', left: scoreLeft, right: scoreRight });
+                }
+
                 if (!checkWinner()) {
                     resetBall();
                 }
+            }
+
+            // Sincronizza la posizione della palla in multiplayer (solo host)
+            if (gameMode === 'multiplayer' && isHost) {
+                sendToPeer({
+                    type: 'ball',
+                    x: ball.x,
+                    y: ball.y,
+                    speedX: ball.speedX,
+                    speedY: ball.speedY
+                });
             }
         }
 
