@@ -96,6 +96,29 @@
         const scoreLeftEl = document.getElementById('scoreLeft');
         const scoreRightEl = document.getElementById('scoreRight');
 
+        // Carica i suoni dalla cartella sound
+        const whistleSound = new Audio('sound/whistle.mp3');
+        const pongSound = new Audio('sound/pong.mp3');
+        const trumpetSound = new Audio('sound/trumpet.mp3');
+
+        // Funzione per suonare il fischietto (inizio gioco)
+        function playWhistle() {
+            whistleSound.currentTime = 0;
+            whistleSound.play();
+        }
+
+        // Funzione per suonare il pong (colpo sulla racchetta)
+        function playPong() {
+            pongSound.currentTime = 0;
+            pongSound.play();
+        }
+
+        // Funzione per suonare la tromba (punto fatto)
+        function playTrumpet() {
+            trumpetSound.currentTime = 0;
+            trumpetSound.play();
+        }
+
         // Colori
         const COLORS = {
             background: '#0f0f23',
@@ -167,6 +190,7 @@
                 gameRunning = true;
                 startBtn.disabled = true;
                 startBtn.textContent = 'IN GIOCO...';
+                playWhistle(); // Fischietto di inizio
                 resetBall();
                 gameLoop();
             }
@@ -220,13 +244,14 @@
                 ball.x + ball.size / 2 >= paddleLeft.x &&
                 ball.y >= paddleLeft.y &&
                 ball.y <= paddleLeft.y + paddleLeft.height) {
-                
+
+                playPong(); // Suono quando colpisce la racchetta
                 ball.speedX = Math.abs(ball.speedX) * 1.05; // Accelera leggermente
-                
+
                 // Angolo basato su dove colpisce la racchetta
                 const hitPos = (ball.y - paddleLeft.y) / PADDLE_HEIGHT;
                 ball.speedY = (hitPos - 0.5) * ball.baseSpeed * 2;
-                
+
                 ball.x = paddleLeft.x + paddleLeft.width + ball.size / 2;
             }
 
@@ -235,22 +260,25 @@
                 ball.x - ball.size / 2 <= paddleRight.x + paddleRight.width &&
                 ball.y >= paddleRight.y &&
                 ball.y <= paddleRight.y + paddleRight.height) {
-                
+
+                playPong(); // Suono quando colpisce la racchetta
                 ball.speedX = -Math.abs(ball.speedX) * 1.05; // Accelera leggermente
-                
+
                 // Angolo basato su dove colpisce la racchetta
                 const hitPos = (ball.y - paddleRight.y) / PADDLE_HEIGHT;
                 ball.speedY = (hitPos - 0.5) * ball.baseSpeed * 2;
-                
+
                 ball.x = paddleRight.x - ball.size / 2;
             }
 
             // Punto segnato
             if (ball.x < 0) {
+                playTrumpet(); // Suono della tromba per punto fatto
                 scoreRight++;
                 scoreRightEl.textContent = scoreRight;
                 resetBall();
             } else if (ball.x > canvas.width) {
+                playTrumpet(); // Suono della tromba per punto fatto
                 scoreLeft++;
                 scoreLeftEl.textContent = scoreLeft;
                 resetBall();
